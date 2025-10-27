@@ -21,7 +21,7 @@ node {
         stage('Start') {
             // 현재 브랜치 정보 수동 확인
             script {
-                def branch = sh(script: "git rev-parse --abbrev-ref HEAD", returnStdout: true).trim()
+                def branch = env.GIT_BRANCH ?: 'unknown'
                 echo "현재 브랜치: ${branch}"
         
                 if (branch == 'main' || branch == 'origin/main') {
