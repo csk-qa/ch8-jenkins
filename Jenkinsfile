@@ -19,14 +19,16 @@ node {
         }
 
         stage('Start') {
-            // 현재 브랜치 정보 출력 (디버깅용)
-            echo "현재 브랜치: ${env.BRANCH_NAME ?: env.GIT_BRANCH}"
-
-            // main 또는 origin/main 일 때만 실행
-            if (env.BRANCH_NAME == 'main' || env.GIT_BRANCH == 'origin/main') {
-                sh 'npm start'
-            } else {
-                echo "Start stage skipped (현재 브랜치가 main이 아님)"
+            // 현재 브랜치 정보 수동 확인
+            script {
+                def branch = sh(script: "git rev-parse --abbrev-ref HEAD", returnStdout: true).trim()
+                echo "현재 브랜치: ${branch}"
+        
+                if (branch == 'main' || branch == 'origin/main') {
+                    sh 'npm start'
+                } else {
+                    echo "Start stage skipped (현재 브랜치가 main이 아님)"
+                }
             }
         }
 
