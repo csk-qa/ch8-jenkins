@@ -20,15 +20,15 @@ node {
 
         stage('Start') {
             // 현재 브랜치 정보 수동 확인
-            script {
-                def branch = env.GIT_BRANCH ?: 'unknown'
-                echo "현재 브랜치: ${branch}"
-        
-                if (branch == 'main' || branch == 'origin/main') {
-                    sh 'npm start'
-                } else {
-                    echo "Start stage skipped (현재 브랜치가 main이 아님)"
-                }
+            def branch = env.GIT_BRANCH ?: 'unknown'
+            echo "현재 브랜치: ${branch}"
+    
+            // 브랜치 정보가 없거나 unknown이면 main으로 간주
+            if (branch == 'main' || branch == 'origin/main' || branch == 'unknown') {
+                echo "브랜치 정보가 없거나 main으로 간주됨 → npm start 실행"
+                sh 'npm start'
+            } else {
+                echo "Start stage skipped (현재 브랜치가 main이 아님)"
             }
         }
 
