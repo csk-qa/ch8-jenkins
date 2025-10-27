@@ -1,47 +1,43 @@
-pipeline {
-    agent any
-    environment {
-        PATH = "/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
-    }
-    stages {
+node {
+    // ✅ 환경 변수 설정
+    env.PATH = "/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+
+    try {
         stage('Checkout') {
-            steps {
-                checkout scm
-            }
+            // Git 저장소 체크아웃
+            checkout scm
         }
 
         stage('Install') {
-            steps {
-                sh 'npm install'
-            }
+            // 의존성 설치
+            sh 'npm install'
         }
 
         stage('Test') {
-            steps {
-                sh 'npm test'
-            }
+            // 테스트 실행
+            sh 'npm test'
         }
 
         stage('Start') {
-            
-            when {
-                anyOf {
-                    branch 'main'
-                    expression { env.GIT_BRANCH == 'origin/main' }
-                }
-            }
-            steps {
-                sh 'npm start'
-            }
-        }
-    }
+            // 현재 브랜치 정보 출력 (디버깅용)
+            echo "현재 브랜치: ${env.BRANCH_NAME ?: env.GIT_BRANCH}"
 
-    post {
-        success {
-            echo 'Pipeline 성공적으로 완료!'
+            // main 또는 origin/main 일 때만 실행
+            if (env.BRANCH_NAME == 'main' || env.GIT_BRANCH == 'origin/main') {
+                sh 'npm start'
+            } else {
+                echo "Start stage skipped (현재 브랜치가 main이 아님)"
+            }
         }
-        failure {
-            echo 'Pipeline 실패!'
-        }
+
+        // ✅ 성공 시 메시지
+        echo 'Pipeline 성공적으로 완료!'
+
+    } catch (err) {
+        // ❌ 실패 시 메시지
+        echo 'Pipeline 실패!'
+        echo "에러 내용: ${err}"
+        currentBuild.result = 'FAILURE'
+        throw err
     }
 }
